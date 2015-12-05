@@ -7,7 +7,6 @@ class MessageType:
     LOCAL_MAP_UPDATE = 4
     COMMAND = 5
     COMMAND_RESULT = 6
-    COUNT = 7
 
 
 class eRequestType:
