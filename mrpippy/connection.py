@@ -1,7 +1,8 @@
 
+import json
 import socket
 
-from common import eat, pack, unpack
+from common import Incomplete, eat, pack, unpack
 
 
 class MessageType(object):
@@ -101,5 +102,5 @@ class ServerConnection(Connection):
 		self.send(MessageType.CONNECTION_ACCEPTED, json.dumps({
 			'version': self.version,
 			'lang': self.language,
-		})
+		}))
 

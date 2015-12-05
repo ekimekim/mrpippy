@@ -1,4 +1,6 @@
 
+import struct
+
 
 class Incomplete(Exception):
 	pass
@@ -17,13 +19,13 @@ def pack(spec, *values):
 
 
 def unpack(spec, data):
-    spec = '<' + spec
-    length = struct.calcsize(spec)
-    data, remaining = eat(data, length)
-    return struct.unpack(spec, data), remaining
+	spec = '<' + spec
+	length = struct.calcsize(spec)
+	data, remaining = eat(data, length)
+	return struct.unpack(spec, data), remaining
 
 
 def parse_string(data):
 	if '\0' not in data:
 		raise Incomplete("Expected nul byte not found")
-    return data.split('\0', 1)
+	return data.split('\0', 1)

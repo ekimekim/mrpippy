@@ -1,4 +1,6 @@
 
+from itertools import count
+
 from common import pack, unpack, parse_string
 
 
@@ -44,14 +46,14 @@ class PipValue(object):
 		if self.value_type == ValueType.OBJECT:
 			return {key: self.manager.id_map[value_id].value for key, value_id in self._value.items()}
 		if self.value_type == ValueType.ARRAY:
-			return [self.manager.id_map[value_id].value for value in self._value]
+			return [self.manager.id_map[value_id].value for value_id in self._value]
 		return self._value
 
 	def update(self, value):
 		"""Update this id with a new value as returned from decode()"""
 		if self.value_type == ValueType.OBJECT:
 			added, removed = value
-			self._value = {key: value_id for key, value_id in self._value.items() if value_id not in removed]
+			self._value = {key: value_id for key, value_id in self._value.items() if value_id not in removed}
 			self._value.update(added)
 		else:
 			self._value = value
@@ -117,6 +119,7 @@ class PipValue(object):
 			value = added, removed
 		else:
 			raise ValueError("Unknown value type {!r}".format(value_type))
+		return value, data
 
 
 class PipDataManager(object):
