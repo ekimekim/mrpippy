@@ -1,15 +1,17 @@
 
-from common import unpack, parse_string
-def unpack(spec, data):
-	spec = '<' + spec
-	length = struct.calcsize(spec)
-	data, remaining = data[:length], data[length:]
-	return struct.unpack(spec, data), remaining
-def parse_string(data):
-	return data.split('\0', 1)
+from common import pack, unpack, parse_string
 
 
-from types import ValueType
+class ValueType(object):
+	BOOL = 0 
+	INT_8 = 1 
+	UINT_8 = 2 
+	INT_32 = 3 
+	UINT_32 = 4 
+	FLOAT = 5 
+	STRING = 6 
+	ARRAY = 7 
+	OBJECT = 8 
 
 
 class PipValue(object):

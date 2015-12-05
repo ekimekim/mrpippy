@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 
-class eMessageType:
+class MessageType:
     KEEP_ALIVE = 0
     CONNECTION_ACCEPTED = 1
     CONNECTION_REFUSED = 2
@@ -11,20 +10,6 @@ class eMessageType:
     COUNT = 7
 
 
-    
-class eValueType:
-    BOOL = 0
-    INT_8 = 1
-    UINT_8 = 2
-    INT_32 = 3
-    UINT_32 = 4
-    FLOAT = 5
-    STRING = 6
-    ARRAY = 7
-    OBJECT = 8
-    
-
-    
 class eRequestType:
     UseItem = 0
     DropItem = 1
