@@ -19,13 +19,13 @@ class ConnectionRefused(Exception):
 
 
 class Connection(object):
+	socket = NotImplemented
 	version = 'unknown'
 	language = 'unknown'
 
-	def __init__(self, addr):
-		self.socket = socket.socket()
+	def __init__(self):
+		"""Shared init code. Subclasses should set self.socket before calling super."""
 		self.buffer = ''
-		self.socket.connect(addr)
 		self.handshake()
 
 	def handshake(self):
@@ -69,6 +69,11 @@ class Connection(object):
 
 
 class ClientConnection(Connection):
+	def __init__(self, host, port=27000):
+		self.socket = socket.socket()
+		self.socket.connect((host, port))
+		super(ClientConnection, self).__init__()
+
 	def handshake(self):
 		message_type, payload = self.recv()
 		if message_type == MessageType.CONNECTION_REFUSED:
@@ -83,12 +88,14 @@ class ClientConnection(Connection):
 
 
 class ServerConnection(Connection):
-	def __init__(self, addr, version=None, language=None):
+	def __init__(self, sock, version=None, language=None):
+		"""Takes an already connected socket, as returned by accept()"""
+		self.socket = sock
 		if version is not None:
 			self.version = version
 		if language is not None:
 			self.language = language
-		super(ServerConnection, self).__init__(addr)
+		super(ServerConnection, self).__init__()
 
 	def handshake(self):
 		self.send(MessageType.CONNECTION_ACCEPTED, json.dumps({
