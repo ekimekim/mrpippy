@@ -1,13 +1,4 @@
 
-class MessageType:
-    KEEP_ALIVE = 0
-    CONNECTION_ACCEPTED = 1
-    CONNECTION_REFUSED = 2
-    DATA_UPDATE = 3
-    LOCAL_MAP_UPDATE = 4
-    COMMAND = 5
-    COMMAND_RESULT = 6
-
 
 class eRequestType:
     UseItem = 0
