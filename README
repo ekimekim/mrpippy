@@ -1,0 +1,6 @@
+
+A python library for interacting with the Fallout 4 game and pip boy mobile app.
+Implements both client and server-like logic.
+
+Draws heavily from https://github.com/matzman666/PyPipboy who did much of the initial
+reverse engineering work.
