@@ -1,6 +1,19 @@
 
+Mr Pippy: I'm no Mr Handy, but I try my best.
+
 A python library for interacting with the Fallout 4 game and pip boy mobile app.
 Implements both client and server-like logic.
 
 Draws heavily from https://github.com/matzman666/PyPipboy who did much of the initial
 reverse engineering work.
+
+MrPippy only implements encode/decode and data management logic.
+It intentionally does not concern itself with the mechanics of when to read/write,
+event-based or threaded models, etc.
+
+
+gPippy is a companion library built on gevent which implements the high level
+interactions such as dispatching and waiting on RPC calls, performing keepalive,
+sending data updates or reacting to changes.
+
+It has support for both client and server operation.
