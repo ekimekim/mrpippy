@@ -34,6 +34,9 @@ class PipValue(object):
 		OBJECT type should be a dict {key: value id}"""
 		self.manager = manager
 		self.id = id or manager.next_id()
+		if self.id in self.manager.id_map:
+			raise ValueError("PipValue with id {} already exists: {}".format(self.id, self.manager.id_map[self.id]))
+		self.manager.id_map[self.id] = self
 		self.value_type = value_type
 		self._value = value
 
@@ -54,6 +57,7 @@ class PipValue(object):
 		if self.value_type == ValueType.OBJECT:
 			added, removed = value
 			self._value = {key: value_id for key, value_id in self._value.items() if value_id not in removed}
+			# NOTE: Even though we are orphaning value_ids here, there is no cleanup, causing a mem leak
 			self._value.update(added)
 		else:
 			self._value = value
@@ -127,11 +131,19 @@ class PipDataManager(object):
 		self.id_map = {}
 
 	def decode(self, data):
-		"""Decode a DATA_UPDATE message, create or update the pip values, and return them as a list."""
+		"""Decode a DATA_UPDATE message, returning a list of (id, value_type, value) updates."""
 		results = []
 		while data:
 			(value_type, id), data = unpack('BI', data)
 			value, data = PipValue.decode(value_type, data)
+			results.append((id, value_type, value))
+		return results
+
+	def decode_and_update(self, data):
+		"""Decode a DATA_UPDATE message, create or update the pip values, and return them as a list.
+		To update a value manually, you should instead manipulate the PipValue directly."""
+		results = []
+		for id, value_type, value in self.decode(data):
 			if id in self.id_map:
 				pipvalue = self.id_map[id]
 				if pipvalue.value_type != value_type:
