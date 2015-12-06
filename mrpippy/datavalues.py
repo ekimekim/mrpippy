@@ -73,7 +73,7 @@ class PipValue(object):
 				item = self.manager.id_map[item]
 			yield item
 
-	def encode(self, prev_state=None):
+	def encode(self, prev_state={}):
 		"""Return the encoded string for a DATA_UPDATE of this object's current state.
 		For OBJECTs, optionally include the previously sent state as OBJECT updates are
 		diffs, not absolute values. This state should be a dict {key: id}"""
@@ -129,6 +129,36 @@ class PipValue(object):
 class PipDataManager(object):
 	def __init__(self):
 		self.id_map = {}
+
+	def encode(self, *values, **kwargs):
+		"""Takes a list of PipValues, and encodes them all into one DATA_UPDATE payload.
+		If kwarg recursive=True, also include all PipValues that are children of the given values.
+		A new connection should always start with manager.encode_all(manager.root, recursive=True).
+		"""
+		recursive = kwargs.pop('recursive', False)
+		if kwargs:
+			raise ValueError("Unexpected kwargs: {}".format(kwargs))
+
+		if recursive:
+			original_values = values
+			values = []
+			def add(value):
+				# if already present, move to front
+				if value in values:
+					values.remove(value)
+				values.insert(0, value)
+				if value.value_type == ValueType.ARRAY:
+					ids = value.raw_value
+				elif value.value_type == ValueType.OBJECT:
+					ids = value.raw_value.values()
+				else:
+					return
+				for id in ids:
+					add(self.id_map[id])
+			for value in original_values:
+				add(value)
+
+		return ''.join(value.encode() for value in values)
 
 	def decode(self, data):
 		"""Decode a DATA_UPDATE message, returning a list of (id, value_type, value) updates."""
