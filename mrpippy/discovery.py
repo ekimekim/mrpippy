@@ -13,7 +13,7 @@ def discover(timeout=1, repeats=5, port=28000, allow_busy=False):
 	timeout is how long to wait for responses.
 	repeats is how many broadcast packets to send. This makes the message (and replies) more likely
 	to make it through despite packet loss."""
-	with closing(socket.socket(socket.AF_INET, socket.SOCK_DGRAM)) as sock:
+	with closing(socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)) as sock:
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
 		for x in range(repeats):
 			sock.sendto(json.dumps({'cmd': 'autodiscover'}), ('255.255.255.255', 28000))
@@ -40,3 +40,32 @@ def discover(timeout=1, repeats=5, port=28000, allow_busy=False):
 				results.add((message['addr'], message['MachineType']))
 	return results
 
+
+class DiscoverServer(object):
+	def __init__(self, addr, machine_type='PC', port=28000, busy=False):
+		"""addr is the tcp addr to advertise connections for"""
+		self.addr = addr
+		self.machine_type = machine_type
+		self.busy = busy
+		self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
+		self.socket.bind(('255.255.255.255', port))
+
+	def serve_one(self):
+		msg, addr = self.socket.recvfrom(1024)
+		try:
+			msg = json.loads(msg)
+		except Exception:
+			continue # malformed msg
+		if msg != {'cmd': 'autodiscover'}:
+			continue # ignore bad msg
+		response = {
+			'addr': self.addr,
+			'MachineType': self.machine_type,
+			'IsBusy': self.busy,
+		}
+		sock.sendto(json.dumps(response), addr)
+
+	def serve_forever(self):
+		while True:
+			self.serve_one()
