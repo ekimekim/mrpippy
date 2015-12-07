@@ -1,4 +1,6 @@
 
+import json
+
 class RequestType(object):
 	UseItem = 0 
 	DropItem = 1 
@@ -128,28 +130,28 @@ class RPCServer(object):
 	"""
 	# map from RequestType to the method name
 	DISPATCH = {
-		UseItem: 'use_item',
-		DropItem: 'drop_item',
-		SetFavorite: 'set_favorite',
-		ToggleComponentFavorite: 'toggle_component_favorite',
-		SortInventory: 'sort_inventory',
-		ToggleQuestActive: 'toggle_quest_active',
-		SetCustomMapMarker: 'set_custom_map_marker',
-		RemoveCustomMapMarker: 'remove_custom_map_marker',
-		CheckFastTravel: 'check_fast_travel',
-		FastTravel: 'fast_travel',
-		MoveLocalMap: 'move_local_map',
-		ZoomLocalMap: 'zoom_local_map',
-		ToggleRadioStation: 'toggle_radio_station',
-		RequestLocalMapSnapshot: 'request_local_map_snapshot',
-		ClearIdle: 'clear_idle',
+		RequestType.UseItem: 'use_item',
+		RequestType.DropItem: 'drop_item',
+		RequestType.SetFavorite: 'set_favorite',
+		RequestType.ToggleComponentFavorite: 'toggle_component_favorite',
+		RequestType.SortInventory: 'sort_inventory',
+		RequestType.ToggleQuestActive: 'toggle_quest_active',
+		RequestType.SetCustomMapMarker: 'set_custom_map_marker',
+		RequestType.RemoveCustomMapMarker: 'remove_custom_map_marker',
+		RequestType.CheckFastTravel: 'check_fast_travel',
+		RequestType.FastTravel: 'fast_travel',
+		RequestType.MoveLocalMap: 'move_local_map',
+		RequestType.ZoomLocalMap: 'zoom_local_map',
+		RequestType.ToggleRadioStation: 'toggle_radio_station',
+		RequestType.RequestLocalMapSnapshot: 'request_local_map_snapshot',
+		RequestType.ClearIdle: 'clear_idle',
 	}
 
 	def get_response(self, request):
 		request = json.loads(request)
 		id = request.pop('id')
 		method = getattr(self, self.DISPATCH[request['type']])
-		response = (*request['args'])
+		response = method(*request['args'])
 		response['id'] = id
 		return response
 

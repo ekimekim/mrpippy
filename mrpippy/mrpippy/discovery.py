@@ -64,7 +64,7 @@ class DiscoverServer(object):
 			'MachineType': self.machine_type,
 			'IsBusy': self.busy,
 		}
-		sock.sendto(json.dumps(response), addr)
+		self.socket.sendto(json.dumps(response), addr)
 
 	def serve_forever(self):
 		while True:

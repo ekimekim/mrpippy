@@ -8,7 +8,7 @@ class LocalMap(object):
 		self.width = width
 		self.height = height
 		self.northwest = northwest
-		self.northeast = northeat
+		self.northeast = northeast
 		self.southwest = southwest
 		self.pixels = pixels
 
@@ -18,7 +18,7 @@ class LocalMap(object):
 		data += pack('ff', *self.northwest)
 		data += pack('ff', *self.northeast)
 		data += pack('ff', *self.southwest)
-		data += pixels
+		data += self.pixels
 		return data
 
 	@classmethod
