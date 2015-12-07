@@ -1,4 +1,6 @@
 
+import gevent
+
 from mrpippy import ClientConnection, RPCManager, MessageType
 
 from common import Service
@@ -6,7 +8,7 @@ from common import Service
 
 class Client(Service):
 	def __init__(self, host, port=27000, on_update=None):
-		"""on_update is an optional callback that is called with a list of updated values on DATA_UPDATE"""
+		"""on_update is an optional callback that is called with an updated value on DATA_UPDATE"""
 		self.conn = ClientConnection(host, port)
 		self.rpc = RPCManager()
 		self.update_callbacks = set()
@@ -30,6 +32,8 @@ class Client(Service):
 		DISPATCH[message_type](payload)
 
 	def data_update(self, payload):
-		updated = self.pipdata.decode_and_update(payload)
-		for callback in self.update_callbacks:
-			callback(updated)
+		for update in self.pipdata.decode_and_update(payload):
+			for callback in self.update_callbacks:
+				callback(update)
+			# since payload may be very large, give other greenlets a chance to run
+			gevent.sleep(0)

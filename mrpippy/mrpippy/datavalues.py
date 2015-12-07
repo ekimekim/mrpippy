@@ -162,18 +162,16 @@ class PipDataManager(object):
 		return ''.join(value.encode() for value in values)
 
 	def decode(self, data):
-		"""Decode a DATA_UPDATE message, returning a list of (id, value_type, value) updates."""
-		results = []
+		"""Decode a DATA_UPDATE message, yielding (id, value_type, value) updates."""
 		while data:
 			(value_type, id), data = unpack('BI', data)
 			value, data = PipValue.decode(value_type, data)
-			results.append((id, value_type, value))
-		return results
+			yield id, value_type, value
 
 	def decode_and_update(self, data):
-		"""Decode a DATA_UPDATE message, create or update the pip values, and return them as a list.
+		"""Decode a DATA_UPDATE message, create or update the pip values, and yield them.
+		To simply update all values at once, use list(decode_and_update()).
 		To update a value manually, you should instead manipulate the PipValue directly."""
-		results = []
 		for id, value_type, value in self.decode(data):
 			if id in self.id_map:
 				pipvalue = self.id_map[id]
@@ -189,8 +187,7 @@ class PipDataManager(object):
 					if removed:
 						raise ValueError("Got non-empty removed list for new id {}".format(id))
 				pipvalue = PipValue(self, value_type, value, id)
-			results.append(pipvalue)
-		return results
+			yield pipvalue
 
 	def next_id(self):
 		"""Get next lowest available id number"""

@@ -19,9 +19,8 @@ def main(host, level='INFO', interval='5'):
 	client.wait()
 
 
-def on_update(values):
-	for value in values:
-		logging.info("Updated value: {}".format(value))
+def on_update(value):
+	logging.info("Updated value: {}".format(value))
 
 
 if __name__ == '__main__':
