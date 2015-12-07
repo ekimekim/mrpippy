@@ -32,8 +32,9 @@ class Client(Service):
 		DISPATCH[message_type](payload)
 
 	def data_update(self, payload):
-		for update in self.pipdata.decode_and_update(payload):
+		for n, update in enumerate(self.pipdata.decode_and_update(payload)):
 			for callback in self.update_callbacks:
 				callback(update)
 			# since payload may be very large, give other greenlets a chance to run
-			gevent.sleep(0)
+			if n % 100 == 0:
+				gevent.sleep(0)
