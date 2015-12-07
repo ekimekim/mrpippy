@@ -108,7 +108,7 @@ class PipValue(object):
 		elif value_type == ValueType.ARRAY:
 			# array is uint16 length, elements are uint32 ids
 			length, data = unpack('H', data)
-			value, data = unpack(length * 'I', data)
+			value, data = unpack(length * 'I', data, as_tuple=True)
 		elif value_type == ValueType.OBJECT:
 			# object is two parts:
 			#     added: (uint16 length, elements are (uint32 id, string key))
@@ -120,7 +120,7 @@ class PipValue(object):
 				key, data = parse_string(data)
 				added[key] = id
 			length, data = unpack('H', data)
-			removed, data = unpack(length * 'I', data)
+			removed, data = unpack(length * 'I', data, as_tuple=True)
 			value = added, removed
 		else:
 			raise ValueError("Unknown value type {!r}".format(value_type))

@@ -18,12 +18,12 @@ def pack(spec, *values):
 	return struct.pack('<' + spec, *values)
 
 
-def unpack(spec, data):
+def unpack(spec, data, as_tuple=False):
 	spec = '<' + spec
 	length = struct.calcsize(spec)
 	data, remaining = eat(data, length)
 	results = struct.unpack(spec, data)
-	if len(results) == 1:
+	if len(results) == 1 and not as_tuple:
 		results, = results
 	return results, remaining
 
