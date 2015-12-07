@@ -8,6 +8,7 @@ setup(
 	description="Fallout 4 Pip Boy app client and server",
 	packages=find_packages(),
 	install_requires=[
+		'mrpippy',
 		'gevent',
 	],
 )
