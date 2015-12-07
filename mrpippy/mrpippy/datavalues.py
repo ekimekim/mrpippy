@@ -41,7 +41,8 @@ class PipValue(object):
 		self._value = value
 
 	def __repr__(self):
-		return "<{cls.__name__} {self.id}={self.value}>".format(cls=type(self), self=self)
+		return "<{cls.__name__} {self.id}={self.raw_value}>".format(cls=type(self), self=self)
+	__str__ = __repr__
 
 	@property
 	def value(self):
