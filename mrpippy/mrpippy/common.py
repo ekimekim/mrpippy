@@ -22,7 +22,10 @@ def unpack(spec, data):
 	spec = '<' + spec
 	length = struct.calcsize(spec)
 	data, remaining = eat(data, length)
-	return struct.unpack(spec, data), remaining
+	results = struct.unpack(spec, data)
+	if len(results) == 1:
+		results, = results
+	return results, remaining
 
 
 def parse_string(data):

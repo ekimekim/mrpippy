@@ -5,6 +5,9 @@ import logging
 import socket
 
 import gevent
+import gevent.event
+import gevent.pool
+import gevent.queue
 
 from mrpippy import PipDataManager, MessageType
 
@@ -16,16 +19,20 @@ def close_on_error(fn):
 		try:
 			fn(self, *args, **kwargs)
 		except Exception as ex:
+			self.log.exception("Error in {}".format(fn))
 			self.close(ex)
 		else:
 			self.close()
+	return _wrapper
 
 
 class Service(object):
+	KEEPALIVE_TIMEOUT = 2
+
 	def __init__(self):
 		"""Subclasses should set self.conn before calling super()"""
 		self.group = gevent.pool.Group()
-		self.log = logging.getLogger('gpippy.{}.{:x}'.format(type(self).__name__), id(self))
+		self.log = logging.getLogger('gpippy.{}.{:x}'.format(type(self).__name__, id(self)))
 
 		self.pipdata = PipDataManager()
 		self.send_queue = gevent.queue.Queue()

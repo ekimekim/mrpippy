@@ -14,7 +14,8 @@ def main(host, level='INFO', interval='5'):
 	client = Client(host, on_update=on_update)
 	while not client.finished.ready():
 		gevent.sleep(interval)
-		print json.dumps(client.pipdata.root.value, indent=4)
+		if client.pipdata.root:
+			print json.dumps(client.pipdata.root.value, indent=4)
 	client.wait()
 
 
@@ -25,4 +26,4 @@ def on_update(values):
 
 if __name__ == '__main__':
 	import sys
-	main(sys.argv[1:])
+	main(*sys.argv[1:])

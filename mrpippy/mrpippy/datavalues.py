@@ -33,12 +33,12 @@ class PipValue(object):
 		ARRAY type should be a list of value ids.
 		OBJECT type should be a dict {key: value id}"""
 		self.manager = manager
-		self.id = id or manager.next_id()
+		self.id = manager.next_id() if id is None else id
 		if self.id in self.manager.id_map:
 			raise ValueError("PipValue with id {} already exists: {}".format(self.id, self.manager.id_map[self.id]))
 		self.manager.id_map[self.id] = self
 		self.value_type = value_type
-		self._value = value
+		self.raw_value = value
 
 	def __repr__(self):
 		return "<{cls.__name__} {self.id}={self.raw_value}>".format(cls=type(self), self=self)
@@ -48,28 +48,28 @@ class PipValue(object):
 	def value(self):
 		"""Return the actual decoded value with all subvalues dereferenced"""
 		if self.value_type == ValueType.OBJECT:
-			return {key: self.manager.id_map[value_id].value for key, value_id in self._value.items()}
+			return {key: self.manager.id_map[value_id].value for key, value_id in self.raw_value.items()}
 		if self.value_type == ValueType.ARRAY:
-			return [self.manager.id_map[value_id].value for value_id in self._value]
-		return self._value
+			return [self.manager.id_map[value_id].value for value_id in self.raw_value]
+		return self.raw_value
 
 	def update(self, value):
 		"""Update this id with a new value as returned from decode()"""
 		if self.value_type == ValueType.OBJECT:
 			added, removed = value
-			self._value = {key: value_id for key, value_id in self._value.items() if value_id not in removed}
+			self.raw_value = {key: value_id for key, value_id in self.raw_value.items() if value_id not in removed}
 			# NOTE: Even though we are orphaning value_ids here, there is no cleanup, causing a mem leak
-			self._value.update(added)
+			self.raw_value.update(added)
 		else:
-			self._value = value
+			self.raw_value = value
 
 	def __getitem__(self, item):
 		"""Get the PipValue for a subitem of an ARRAY or OBJECT"""
-		return self.manager.id_map[self._value[item]]
+		return self.manager.id_map[self.raw_value[item]]
 
 	def __iter__(self):
 		"""Iterate over an ARRAY or OBJECT. Note ARRAYs return PipValue()s"""
-		for item in self._value:
+		for item in self.raw_value:
 			if self.value_type == ValueType.ARRAY:
 				item = self.manager.id_map[item]
 			yield item
@@ -80,15 +80,15 @@ class PipValue(object):
 		diffs, not absolute values. This state should be a dict {key: id}"""
 		data = pack('BI', self.value_type, self.id)
 		if self.value_type in self.TYPE_MAP:
-			data += pack(self.TYPE_MAP[self.value_type], self._value)
+			data += pack(self.TYPE_MAP[self.value_type], self.raw_value)
 		elif self.value_type == ValueType.STRING:
-			data += self._value + '\0'
+			data += self.raw_value + '\0'
 		elif self.value_type == ValueType.ARRAY:
-			data += pack('H', len(self._value)) + pack(len(self._value) * 'I', *self._value)
+			data += pack('H', len(self.raw_value)) + pack(len(self.raw_value) * 'I', *self.raw_value)
 		elif self.value_type == ValueType.OBJECT:
 			removed = [value_id for key, value_id in prev_state.items()
-			           if self._value.get(key) != value_id]
-			added = {key: value_id for key, value_id in self._value.items()
+			           if self.raw_value.get(key) != value_id]
+			added = {key: value_id for key, value_id in self.raw_value.items()
 			         if prev_state.get(key) != value_id}
 			data += pack('H', len(added))
 			for key, value_id in added.items():

@@ -56,9 +56,9 @@ class DiscoverServer(object):
 		try:
 			msg = json.loads(msg)
 		except Exception:
-			continue # malformed msg
+			return # malformed msg
 		if msg != {'cmd': 'autodiscover'}:
-			continue # ignore bad msg
+			return # ignore bad msg
 		response = {
 			'addr': self.addr,
 			'MachineType': self.machine_type,
