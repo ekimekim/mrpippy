@@ -69,11 +69,13 @@ class Connection(object):
 		self.send(MessageType.KEEP_ALIVE, "")
 
 
-class ClientConnection(Connection):
-	def __init__(self, host, port=27000):
-		self.socket = socket.socket()
-		self.socket.connect((host, port))
-		super(ClientConnection, self).__init__()
+class ClientConnectionFromSocket(Connection):
+	"""You generally want ClientConnection instead.
+	This class is for if you need to give a socket explicitly. This is useful if NAT is causing issues
+	and you need the server to connect to the client instead of the other way around."""
+	def __init__(self, socket):
+		self.socket = socket
+		super(ClientConnectionFromSocket, self).__init__()
 
 	def handshake(self):
 		message_type, payload = self.recv()
@@ -86,6 +88,13 @@ class ClientConnection(Connection):
 		payload = json.loads(payload)
 		self.version = payload['version']
 		self.language = payload['lang']
+
+
+class ClientConnection(ClientConnectionFromSocket):
+	def __init__(self, host, port=27000):
+		sock = socket.socket()
+		sock.connect((host, port))
+		super(ClientConnection, self).__init__(sock)
 
 
 class ServerConnection(Connection):
