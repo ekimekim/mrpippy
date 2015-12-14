@@ -3,8 +3,8 @@ class Data(object):
 	"""Base class for all objects based on gathered data values"""
 
 	def __init__(self, value_or_manager):
-		from mrpippy import DataManager
-		if isinstance(value_or_manager, DataManager):
+		from mrpippy import PipDataManager
+		if isinstance(value_or_manager, PipDataManager):
 			value_or_manager = self.from_manager(value_or_manager)
 		self.root = value_or_manager
 
