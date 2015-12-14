@@ -106,9 +106,17 @@ class Inventory(Data):
 		"""Returns a list of equipped clothing"""
 		return self._find_equip(1)
 
+	def _find_equip(self, state):
+		return [item for item in self.items if item.value['equipState'] == state]
+
 
 class Item(Data):
 	"""Represents one record in the item list. Could be multiple items of the same type."""
+
+	def __repr__(self):
+		return "<{cls.__name__} {self.count}x {self.name!r}>".format(self=self, cls=type(self))
+	__str__ = __repr__
+
 	@property
 	def name(self):
 		return self.root.value['text']
@@ -139,7 +147,7 @@ class Item(Data):
 		None indicates the item is not favoritable."""
 		if not self.root.value['canFavorite']:
 			return
-		return self.root.value['favourite'] >= 0
+		return self.root.value['favorite'] >= 0
 
 	@property
 	def favorite_slot(self):

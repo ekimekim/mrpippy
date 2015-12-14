@@ -46,15 +46,11 @@ class Player(Data):
 
 	@property
 	def name(self):
-		return self.value['PlayerInfo']['name']
+		return self.value['PlayerInfo']['PlayerName']
 
 	@property
 	def hp(self):
 		return self.value['PlayerInfo']['CurrHP']
-
-	def hp_with_healing(self):
-		"""Currently projected total HP after all healing effects apply."""
-		return min(self.maxhp, self.hp + self.value['PlayerInfo']['CurrentHPGain'])
 
 	@property
 	def maxhp(self):
@@ -116,9 +112,9 @@ class Player(Data):
 	@property
 	def special(self):
 		"""Returns a tuple of player's S.P.E.C.I.A.L. stats, in order."""
-		return [stat['Value'] + stat['Modifier'] for stat in self.value['Special']]
+		return [stat['Value'] for stat in self.value['Special']]
 
 	@property
 	def base_special(self):
 		"""As special, but without temporary modifiers."""
-		return [stat['Value'] for stat in self.value['Special']]
+		return [stat['Value'] - stat['Modifier'] for stat in self.value['Special']]
