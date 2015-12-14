@@ -37,4 +37,4 @@ class Client(Service):
 				callback(update)
 			# since payload may be very large, give other greenlets a chance to run
 			if n % 100 == 0:
-				gevent.sleep(0)
+				gevent.idle(0)
