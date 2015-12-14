@@ -1,4 +1,8 @@
 
+from calendar import timegm
+
+from common import Data
+
 
 class Player(Data):
 	"""Contains high level info or direct player-related data"""
@@ -50,7 +54,7 @@ class Player(Data):
 
 	def hp_with_healing(self):
 		"""Currently projected total HP after all healing effects apply."""
-		return min(self.maxhp, self.hp + self.value['PlayerInfo']['CurrentHPGain']
+		return min(self.maxhp, self.hp + self.value['PlayerInfo']['CurrentHPGain'])
 
 	@property
 	def maxhp(self):
@@ -69,10 +73,6 @@ class Player(Data):
 	@property
 	def maxweight(self):
 		return self.value['PlayerInfo']['MaxWeight']
-
-	@property
-	def name(self):
-		return self.value['PlayerInfo']['name']
 
 	@property
 	def hour(self):
@@ -97,6 +97,7 @@ class Player(Data):
 			perk['Name']: perk['Rank']
 			for perk in self.value['Perks']
 			if perk['Name'] and perk['Rank']
+		}
 
 	@property
 	def radio(self):

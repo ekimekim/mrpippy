@@ -1,4 +1,6 @@
 
+from common import Data
+
 ITEM_TYPES = {
 	'29': 'Apparel',
 	'30': 'Notes/Magazines',
@@ -91,7 +93,7 @@ class Inventory(Data):
 		return weapon
 
 	@property
-	def weapon(self):
+	def grenade(self):
 		"""Returns the currently equipped grenade, or None"""
 		grenades = self._find_equip(3)
 		if not grenades:
@@ -100,7 +102,7 @@ class Inventory(Data):
 		return grenade
 
 	@property
-	def weapon(self):
+	def wearing(self):
 		"""Returns a list of equipped clothing"""
 		return self._find_equip(1)
 
