@@ -111,3 +111,13 @@ class Player(Data):
 	def available_radios(self):
 		"""Returns list of available radio stations by name."""
 		return [radio['text'] for radio in self.value['Radio'] if radio['inRange']]
+
+	@property
+	def special(self):
+		"""Returns a tuple of player's S.P.E.C.I.A.L. stats, in order."""
+		return [stat['Value'] + stat['Modifier'] for stat in self.value['Special']]
+
+	@property
+	def base_special(self):
+		"""As special, but without temporary modifiers."""
+		return [stat['Value'] for stat in self.value['Special']]
