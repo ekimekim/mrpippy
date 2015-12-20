@@ -121,6 +121,19 @@ class RPCManager(object):
 			raise ValueError("Response for unknown id {}: {}".format(response['id']), response)
 		self.outstanding.pop(response['id'])(response)
 
+	# specific methods for creating requests
+
+	def use_item(self, callback, handle_id, version):
+		"""Use item with given handle id from inventory.
+		eg. consume aid, or equip weapon.
+		Version is likely a means to avoid race conditions, assumedly must be current."""
+		return self.create_request(callback, RequestType.UseItem, handle_id, 0, version)
+
+	def toggle_radio_station(self, index):
+		"""Activate radio station with given index in the list of radio stations.
+		If already active, deactivate it instead, leaving no station on."""
+		return self.create_request(callback, RequestType.ToggleRadioStation, index)
+
 
 class RPCServer(object):
 	"""Helper for responding to RPC calls as the server.
