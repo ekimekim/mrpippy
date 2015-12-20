@@ -205,6 +205,7 @@ class Item(Data):
 		such as "STR +1" or "HP +33%" or "Slows time for 10 seconds"
 		"""
 		results = []
+		long_results = [] # long descriptions always go last
 		for info in self.root.value['itemCardInfoList']:
 			if info.text.startswith('$'):
 				continue
@@ -212,7 +213,7 @@ class Item(Data):
 				if info['text'] != 'HP':
 					# work around for "cures all addictions" items,
 					# which have 12 blank 'HP' entries with description True for some reason
-					results.append(info['text'])
+					long_results.append(info['text'])
 				continue
 			value = info['Value']
 			if info.get('scaleWithDuration'):
@@ -221,4 +222,4 @@ class Item(Data):
 			if info.get('showAsPercent'):
 				value += '%'
 			results.append("{} {}".format(info['text'], value))
-		return results
+		return results + long_results
