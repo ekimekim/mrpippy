@@ -17,7 +17,7 @@ client = None
 def main(host, level='INFO', interval='5'):
 	global client
 	interval = float(interval)
-	logging.basicConfig(level=level)
+	logging.basicConfig(level=level, filename='/tmp/log')
 	client = Client(host, on_update=on_update)
 	client.wait()
 

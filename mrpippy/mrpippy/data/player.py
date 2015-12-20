@@ -29,7 +29,7 @@ class Player(Data):
 	def location(self):
 		map = self.value['Map']
 		# CurrCell is empty when outdoors?
-		return map['CurrCell'] or map['CurrWorldSpace']
+		return map['CurrCell'] or map['CurrWorldspace']
 
 	@property
 	def coordinates(self):
