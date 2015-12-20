@@ -6,6 +6,16 @@ from mrpippy import ClientConnection, RPCManager, MessageType
 from common import Service
 
 
+def _do_rpc(name):
+	"""Generates a method that calls self.do_rpc with the named method on self.rpc,
+	eg. _do_rpc('foo')(self, *args) -> do_rpc(self, self.rpc.foo, *args)
+	"""
+	def generated(self, *args):
+		return self.do_rpc(getattr(self.rpc, name), *args)
+	generated.__name__ = name
+	return generated
+
+
 class Client(Service):
 	def __init__(self, host, port=27000, on_update=None):
 		"""on_update is an optional callback that is called with an updated value on DATA_UPDATE"""
@@ -38,3 +48,15 @@ class Client(Service):
 			# since payload may be very large, give other greenlets a chance to run
 			if n % 100 == 0:
 				gevent.idle(0)
+
+	def do_rpc(self, method, *args, **kwargs):
+		block = kwargs.get('block', True)
+		if kwargs:
+			raise ValueError("Unexpected kwargs: {}".format(kwargs))
+		result = AsyncResult()
+		request = method(lambda v: result.set(v), *args)
+		self.send(MessageType.COMMAND, request)
+		self.log.info("Send RPC: {}{}".format(method, args))
+		return result.get()
+
+	use_item = _do_rpc('use_item')
