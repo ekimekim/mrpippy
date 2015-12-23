@@ -17,14 +17,14 @@ def _do_rpc(name):
 
 
 class Client(Service):
-	def __init__(self, host, port=27000, on_update=None):
+	def __init__(self, host, port=27000, on_update=None, on_close=None):
 		"""on_update is an optional callback that is called with an updated value on DATA_UPDATE"""
 		self.conn = ClientConnection(host, port)
 		self.rpc = RPCManager()
 		self.update_callbacks = set()
 		if on_update:
 			self.update_callbacks.add(on_update)
-		super(Client, self).__init__()
+		super(Client, self).__init__(on_close=on_close)
 
 	def process(self, message_type, payload):
 		IGNORE = lambda payload: None

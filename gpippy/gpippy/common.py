@@ -29,7 +29,7 @@ def close_on_error(fn):
 class Service(object):
 	KEEPALIVE_TIMEOUT = 2
 
-	def __init__(self):
+	def __init__(self, on_close=None):
 		"""Subclasses should set self.conn before calling super()"""
 		self.group = gevent.pool.Group()
 		self.log = logging.getLogger('gpippy.{}.{:x}'.format(type(self).__name__, id(self)))
@@ -37,7 +37,10 @@ class Service(object):
 		self.pipdata = PipDataManager()
 		self.send_queue = gevent.queue.Queue()
 		self.closing = False
+		self.on_close = set()
 		self.finished = gevent.event.AsyncResult()
+		if on_close:
+			self.on_close.add(on_close)
 
 		self.group.spawn(self._send_loop)
 		self.group.spawn(self._recv_loop)
@@ -85,6 +88,8 @@ class Service(object):
 		def _close():
 			self.group.kill(block=True)
 			self.conn.socket.close()
+			for callback in self.on_close:
+				callback(ex)
 			if ex:
 				self.finished.set_exception(ex)
 			else:
