@@ -115,9 +115,71 @@ class Inventory(Data):
 class Item(Data):
 	"""Represents one record in the item list. Could be multiple items of the same type."""
 
+	# maps from ammo type as per item info card to the name of the ammo item
+	# All lower-case as different sources often cite different capitalization.
+	# NOTE: for simplicity, we don't include the Syringer Ammo in this list (as it has variants)
+	AMMO_TYPES = {
+		'flare': 'flare',
+		'.44': '.44 round',
+		'10mm': '10mm round',
+		'.308': '.308 round',
+		'.38': '.38 round',
+		'.45': '.45 round',
+		'5.56mm': '5.56mm round',
+		'railway spike': 'railway spike',
+		'shell': 'shotgun shell',
+		'mini nuke': 'mini nuke',
+		'flamer': 'flamer fuel', # confirm?
+		'5mm': '5mm round',
+		'missile': 'missile',
+		'cannonball': 'cannonball',
+		'cell': 'fusion cell',
+		'core': 'fusion core', # confirm?
+		'plasma': 'plasma cartridge',
+		'gamma': 'gamma round',
+		'2mm ec': '2mm electromagnetic cartridge',
+		'alien blaster': 'alien blaster round', # confirm?
+		'cryo': 'cryo cell', # confirm?
+	}
+
+	# All grenade and mine-type weapon names.
+	# All lower-case as different sources often cite different capitalization.
+	GRENADE_NAMES = {
+		'baseball grenade',
+		'cryo grenade',
+		'fragmentation grenade',
+		'hallucigen gas grenade',
+		'homing beacon',
+		'institute beacon',
+		'institute em pulse grenade',
+		'molotov cocktail',
+		'nuka grenade',
+		'plasma grenade',
+		'pulse grenade',
+		'bottlecap mine',
+		'cryo mine',
+		'fragmentation mine',
+		'nuke mine',
+		'plasma mine',
+		'pulse mine',
+		'artillery smoke grenade',
+		'synth relay grenade',
+		'vertibird signal grenade',
+	}
+
+	# All alcohol-type aid item names.
+	# All lower-case as different sources often cite different capitalization.
+	ALCOHOL_NAMES = {
+		# TODO
+	}
+
 	def __repr__(self):
 		return "<{cls.__name__} {self.count}x {self.name!r}>".format(self=self, cls=type(self))
 	__str__ = __repr__
+
+	@property
+	def inventory(self):
+		return Inventory(self.manager)
 
 	@property
 	def name(self):
@@ -223,3 +285,33 @@ class Item(Data):
 				value += '%'
 			results.append("{} {}".format(info['text'], value))
 		return results + long_results
+
+	@property
+	def ammo_type(self):
+		"""The name of the ammunition type for this item, if any.
+		For items like firearms, returns the type as per the item card, eg. '.308'
+		For items like grenades, returns the name of this item.
+		If the item doesn't use ammo, returns None.
+		"""
+		if self.name.lower() in self.GRENADE_NAMES:
+			return self.name
+		for info in self.root.value['itemCardInfoList']:
+			if info['text'].lower() in self.AMMO_TYPES:
+				return info['text']
+
+	@property
+	def ammo(self):
+		"""Returns the item that is ammunition for this item, if any.
+		For items like firearms, returns the item for the ammo type used by the weapon.
+		For items like grenades, simply returns self.
+		If you are not carrying any of the ammo type, or if the item doesn't use ammo, returns None.
+		"""
+		ammo_type = self.ammo_type
+		if not ammo_type:
+			return
+		if ammo_type == self.name:
+			return self
+		ammo_type = ammo_type.lower()
+		for ammo_item in self.inventory.ammo:
+			if ammo_item.name.lower() == self.AMMO_TYPES[ammo_type]:
+				return ammo_item
