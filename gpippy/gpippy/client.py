@@ -1,4 +1,5 @@
 
+from gevent.event import AsyncResult
 import gevent
 
 from mrpippy import ClientConnection, RPCManager, MessageType

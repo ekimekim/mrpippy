@@ -269,7 +269,7 @@ class Item(Data):
 		results = []
 		long_results = [] # long descriptions always go last
 		for info in self.root.value['itemCardInfoList']:
-			if info.text.startswith('$'):
+			if info['text'].startswith('$'):
 				continue
 			if info.get('showAsDescription'):
 				if info['text'] != 'HP':
@@ -280,7 +280,7 @@ class Item(Data):
 			value = info['Value']
 			if info.get('scaleWithDuration'):
 				value *= info['duration']
-			value = '{:+0f}'.format(value)
+			value = '{:+.0f}'.format(value)
 			if info.get('showAsPercent'):
 				value += '%'
 			results.append("{} {}".format(info['text'], value))
