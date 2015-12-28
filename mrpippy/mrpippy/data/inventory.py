@@ -170,6 +170,7 @@ class Item(Data):
 	# All alcohol-type aid item names.
 	# All lower-case as different sources often cite different capitalization.
 	ALCOHOL_NAMES = {
+		'wine',
 		# TODO
 	}
 
