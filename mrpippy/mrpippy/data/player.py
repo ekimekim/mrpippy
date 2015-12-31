@@ -18,6 +18,7 @@ class Player(Data):
 			status['IsInAutoVanity'],
 			status['IsPlayerDead'],
 			status['IsMenuOpen'],
+			status['IsInVats'],
 			status['IsInVatsPlayback'],
 			status['IsPlayerPipboyLocked'],
 			status['IsPlayerMovementLocked'],
