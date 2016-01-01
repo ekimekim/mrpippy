@@ -170,8 +170,29 @@ class Item(Data):
 	# All alcohol-type aid item names.
 	# All lower-case as different sources often cite different capitalization.
 	ALCOHOL_NAMES = {
+		'beer',
+		"bobrov's best moonshine",
+		'bourbon',
+		'dirty wastelander',
+		'gwinnett ',
+		'gwinnett ale',
+		'gwinnett brew',
+		'gwinnett lager',
+		'gwinnett pale',
+		'gwinnett pilsner',
+		'gwinnett stout',
+		'ice cold beer',
+		'ice cold gwinnett ale',
+		'ice cold gwinnett brew',
+		'ice cold gwinnett lager',
+		'ice cold gwinnett pale',
+		'ice cold gwinnett pilsner',
+		'ice cold gwinnett stout',
+		'poisoned wine',
+		'rum',
+		'vodka',
+		'whiskey',
 		'wine',
-		# TODO
 	}
 
 	def __repr__(self):
