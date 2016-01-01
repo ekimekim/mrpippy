@@ -79,6 +79,8 @@ class Inventory(Data):
 		return self._items('50')
 
 	def _items(self, item_type):
+		if item_type not in self.root:
+			return []
 		return [Item(value) for value in self.root[item_type]]
 
 	@property

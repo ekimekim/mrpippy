@@ -67,6 +67,9 @@ class PipValue(object):
 		"""Get the PipValue for a subitem of an ARRAY or OBJECT"""
 		return self.manager.id_map[self.raw_value[item]]
 
+	def __contains__(self, item):
+		return item in self.raw_value
+
 	def __iter__(self):
 		"""Iterate over an ARRAY or OBJECT. Note ARRAYs return PipValue()s"""
 		for item in self.raw_value:
