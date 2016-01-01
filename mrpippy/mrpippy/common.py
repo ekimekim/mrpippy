@@ -1,5 +1,6 @@
 
 import struct
+import time
 
 
 class Incomplete(Exception):
@@ -32,3 +33,14 @@ def parse_string(data):
 	if '\0' not in data:
 		raise Incomplete("Expected nul byte not found")
 	return data.split('\0', 1)
+
+
+class Timer(object):
+	def __init__(self, log, name):
+		self.log = log
+		self.name = name
+	def __enter__(self):
+		self.start = time.time()
+		self.log.debug('Entering %s', name)
+	def __exit__(self, *exc_info):
+		self.log.info("Exiting %s, took %.4fs", name, time.time() - self.start)

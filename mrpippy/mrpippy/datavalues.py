@@ -172,22 +172,25 @@ class PipDataManager(object):
 		"""Decode a DATA_UPDATE message, create or update the pip values, and yield them.
 		To simply update all values at once, use list(decode_and_update()).
 		To update a value manually, you should instead manipulate the PipValue directly."""
-		for id, value_type, value in self.decode(data):
-			if id in self.id_map:
-				pipvalue = self.id_map[id]
-				if pipvalue.value_type != value_type:
-					raise ValueError("Data update has type {value_type!r}, but existing record {pipvalue} has type {pipvalue.value_type!r}".format(
-						value_type=value_type,
-						pipvalue=pipvalue,
-					))
-				pipvalue.update(value)
-			else:
-				if value_type == ValueType.OBJECT:
-					value, removed = value
-					if removed:
-						raise ValueError("Got non-empty removed list for new id {}".format(id))
-				pipvalue = PipValue(self, value_type, value, id)
-			yield pipvalue
+		from common import Timer
+		from logging import getLogger
+		with Timer(getLogger('datavalue'), 'decoding all values'):
+			for id, value_type, value in self.decode(data):
+				if id in self.id_map:
+					pipvalue = self.id_map[id]
+					if pipvalue.value_type != value_type:
+						raise ValueError("Data update has type {value_type!r}, but existing record {pipvalue} has type {pipvalue.value_type!r}".format(
+							value_type=value_type,
+							pipvalue=pipvalue,
+						))
+					pipvalue.update(value)
+				else:
+					if value_type == ValueType.OBJECT:
+						value, removed = value
+						if removed:
+							raise ValueError("Got non-empty removed list for new id {}".format(id))
+					pipvalue = PipValue(self, value_type, value, id)
+				yield pipvalue
 
 	def next_id(self):
 		"""Get next lowest available id number"""
