@@ -3,6 +3,7 @@ from gevent.event import AsyncResult
 import gevent
 
 from mrpippy import ClientConnection, RPCManager, MessageType
+from mrpippy.connection import ClientConnectionFromSocket
 
 from common import Service
 
@@ -20,7 +21,16 @@ def _do_rpc(name):
 class Client(Service):
 	def __init__(self, host, port=27000, on_update=None, on_close=None):
 		"""on_update is an optional callback that is called with a list of updated values on DATA_UPDATE"""
-		self.conn = ClientConnection(host, port)
+		if host is None:
+			import socket
+			l = socket.socket()
+			l.bind(('0.0.0.0', 27000))
+			l.listen(128)
+			sock, a = l.accept()
+			l.close()
+			self.conn = ClientConnectionFromSocket(sock)
+		else:
+			self.conn = ClientConnection(host, port)
 		self.rpc = RPCManager()
 		self.update_callbacks = set()
 		if on_update:
