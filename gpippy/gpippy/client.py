@@ -12,8 +12,8 @@ def _do_rpc(name):
 	"""Generates a method that calls self.do_rpc with the named method on self.rpc,
 	eg. _do_rpc('foo')(self, *args) -> do_rpc(self, self.rpc.foo, *args)
 	"""
-	def generated(self, *args):
-		return self.do_rpc(getattr(self.rpc, name), *args)
+	def generated(self, *args, **kwargs):
+		return self.do_rpc(getattr(self.rpc, name), *args, **kwargs)
 	generated.__name__ = name
 	return generated
 
@@ -61,13 +61,14 @@ class Client(Service):
 			callback(update)
 
 	def do_rpc(self, method, *args, **kwargs):
-		block = kwargs.get('block', True)
+		block = kwargs.pop('block', True)
 		if kwargs:
 			raise ValueError("Unexpected kwargs: {}".format(kwargs))
 		result = AsyncResult()
 		request = method(lambda v: result.set(v), *args)
 		self.send(MessageType.COMMAND, request)
 		self.log.info("Send RPC: {}{}".format(method, args))
-		return result.get()
+		if block:
+			return result.get()
 
 	use_item = _do_rpc('use_item')
