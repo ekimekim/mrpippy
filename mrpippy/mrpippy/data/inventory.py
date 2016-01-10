@@ -30,16 +30,16 @@ class Inventory(Data):
 	@property
 	def stimpak(self):
 		"""Returns the Item() corresponding to stimpaks, or None"""
-		if not self.root.value['stimpakObjectIDIsValid']:
+		if not self.root['stimpakObjectIDIsValid'].value:
 			return
-		return Item(self.manager.id_map[self.root.value['stimpakObjectID']])
+		return Item(self.manager.id_map[self.root['stimpakObjectID'].value])
 
 	@property
 	def radaway(self):
 		"""Returns the Item() corresponding to radaways, or None"""
-		if not self.root.value['radawayObjectIDIsValid']:
+		if not self.root['radawayObjectIDIsValid'].value:
 			return
-		return Item(self.manager.id_map[self.root.value['radawayObjectID']])
+		return Item(self.manager.id_map[self.root['radawayObjectID'].value])
 
 	@property
 	def items(self):
@@ -85,7 +85,7 @@ class Inventory(Data):
 
 	@property
 	def version(self):
-		return self.root.value['Version']
+		return self.root['Version'].value
 
 	@property
 	def weapon(self):
@@ -111,7 +111,7 @@ class Inventory(Data):
 		return self._find_equip(1)
 
 	def _find_equip(self, state):
-		return [item for item in self.items if item.value['equipState'] == state]
+		return [item for item in self.items if item.root['equipState'].value == state]
 
 
 class Item(Data):
@@ -207,14 +207,14 @@ class Item(Data):
 
 	@property
 	def name(self):
-		return self.root.value['text']
+		return self.root['text'].value
 
 	@property
 	def count(self):
-		return self.root.value["count"]
+		return self.root["count"].value
 
 	def _find_info(self, **criteria):
-		infos = [info for info in self.root.value['itemCardInfoList']
+		infos = [info for info in self.root['itemCardInfoList'].value
 		         if all(info.get(key) == value for key, value in criteria.items())]
 		if not infos:
 			return
@@ -233,9 +233,9 @@ class Item(Data):
 	def favorite(self):
 		"""Returns whether the item is favorited. Possible values are True, False, or None.
 		None indicates the item is not favoritable."""
-		if not self.root.value['canFavorite']:
+		if not self.root['canFavorite'].value:
 			return
-		return self.root.value['favorite'] >= 0
+		return self.root['favorite'].value >= 0
 
 	@property
 	def favorite_slot(self):
@@ -243,24 +243,24 @@ class Item(Data):
 		Otherwise None."""
 		if not self.favorite:
 			return
-		return self.root.value['favorite']
+		return self.root['favorite'].value
 
 	@property
 	def equipped(self):
 		"""Returned whether the item is equipped. Possible values are True, False or None.
 		None indicates the item is not equippable."""
-		state = self.root.value['equipState']
+		state = self.root['equipState'].value
 		if state is None:
 			return None
 		return state != 0
 
 	@property
 	def handle_id(self):
-		return self.root.value['HandleID']
+		return self.root['HandleID'].value
 
 	@property
 	def stack_id(self):
-		return self.root.value['StackID']
+		return self.root['StackID'].value
 
 	@property
 	def effects(self):
@@ -272,7 +272,7 @@ class Item(Data):
 		We ignore long description items.
 		"""
 		results = defaultdict(lambda: 0)
-		for info in self.root.value['itemCardInfoList']:
+		for info in self.root['itemCardInfoList'].value:
 			if info.get('showAsPercent'):
 				continue
 			if info.text.startswith('$'):
@@ -283,6 +283,7 @@ class Item(Data):
 			if info.get('scaleWithDuration'):
 				value *= info['duration']
 			results[info['text']] += value
+		return results
 
 	@property
 	def effects_text(self):
@@ -292,7 +293,7 @@ class Item(Data):
 		"""
 		results = []
 		long_results = [] # long descriptions always go last
-		for info in self.root.value['itemCardInfoList']:
+		for info in self.root['itemCardInfoList'].value:
 			if info['text'].startswith('$'):
 				continue
 			if info.get('showAsDescription'):
@@ -319,7 +320,7 @@ class Item(Data):
 		"""
 		if self.name.lower() in self.GRENADE_NAMES:
 			return self.name
-		for info in self.root.value['itemCardInfoList']:
+		for info in self.root['itemCardInfoList'].value:
 			if info['text'].lower() in self.AMMO_TYPES:
 				return info['text']
 
