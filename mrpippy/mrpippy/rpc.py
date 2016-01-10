@@ -94,6 +94,12 @@ class LocationMarkerType(object):
 	PowerArmorLocMarker = 71
 
 
+# TODO this probably isn't complete
+HAS_REPLY = {
+	RequestType.FastTravel,
+}
+
+
 class RPCManager(object):
 	"""Manager for client RPC calls. Keeps track of what has been answered and
 	executes callback(response dict) when it gets a response."""
@@ -106,13 +112,23 @@ class RPCManager(object):
 		self.next_id += 1
 		return current
 
-	def create_request(self, callback, request_type, *args):
+	def create_request(self, request_type, *args, **kwargs):
+		"""Create a request message to send, using the next available rpc id.
+		Optional kwarg callback, if request type expects a response, will be called
+		upon that response being recv()'d
+		"""
+		callback = kwargs.pop('callback', None)
+		if kwargs:
+			raise TypeError("Unexpected kwargs: {}".format(kwargs))
+		if callback and request_type not in HAS_REPLY:
+			raise ValueError("Request type {} does not expect a response".format(request_type))
 		request = {
 			'id': self.allocate_id(),
 			'type': request_type,
 			'args': args,
 		}
-		self.outstanding[request['id']] = callback
+		if callback:
+			self.outstanding[request['id']] = callback
 		return json.dumps(request)
 
 	def recv(self, response):
@@ -123,16 +139,16 @@ class RPCManager(object):
 
 	# specific methods for creating requests
 
-	def use_item(self, callback, handle_id, version):
+	def use_item(self, handle_id, version):
 		"""Use item with given handle id from inventory.
 		eg. consume aid, or equip weapon.
 		Version is likely a means to avoid race conditions, assumedly must be current."""
-		return self.create_request(callback, RequestType.UseItem, handle_id, 0, version)
+		return self.create_request(RequestType.UseItem, handle_id, 0, version)
 
-	def toggle_radio_station(self, index):
-		"""Activate radio station with given index in the list of radio stations.
+	def toggle_radio_station(self, id):
+		"""Activate radio station with given data id in the Radios array.
 		If already active, deactivate it instead, leaving no station on."""
-		return self.create_request(callback, RequestType.ToggleRadioStation, index)
+		return self.create_request(RequestType.ToggleRadioStation, id)
 
 
 class RPCServer(object):
