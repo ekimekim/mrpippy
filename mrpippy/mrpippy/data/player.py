@@ -41,78 +41,78 @@ class Player(Data):
 
 	@property
 	def location(self):
-		map = self.value['Map']
+		map = self.root['Map']
 		# CurrCell is empty when outdoors?
-		return map['CurrCell'] or map['CurrWorldspace']
+		return map['CurrCell'].value or map['CurrWorldspace'].value
 
 	@property
 	def coordinates(self):
 		"""World coords of player"""
-		player = self.value['Map']['World']['Player']
-		return player['X'], player['Y']
+		player = self.root['Map']['World']['Player']
+		return player['X'].value, player['Y'].value
 
 	@property
 	def limbs(self):
 		"""Returns a dict {body part: condition between 0 and 1}"""
 		parts = {"Head", "RLeg", "RArm", "LLeg", "LArm", "Torso"}
-		stats = self.value['Stats']
-		return {part: stats["{}Condition".format(part)] / 100.0 for part in parts}
+		stats = self.root['Stats']
+		return {part: stats["{}Condition".format(part)].value / 100.0 for part in parts}
 
 	@property
 	def name(self):
-		return self.value['PlayerInfo']['PlayerName']
+		return self.root['PlayerInfo']['PlayerName'].value
 
 	@property
 	def hp(self):
-		return self.value['PlayerInfo']['CurrHP']
+		return self.root['PlayerInfo']['CurrHP'].value
 
 	@property
 	def maxhp(self):
-		return self.value['PlayerInfo']['MaxHP']
+		return self.root['PlayerInfo']['MaxHP'].value
 
 	@property
 	def level(self):
 		"""Note this is a float and includes progress to next level"""
-		playerinfo = self.value['PlayerInfo']
-		return playerinfo['XPLevel'] + playerinfo['XPProgressPct']
+		playerinfo = self.root['PlayerInfo']
+		return playerinfo['XPLevel'].value + playerinfo['XPProgressPct'].value
 
 	@property
 	def weight(self):
-		return self.value['PlayerInfo']['CurrWeight']
+		return self.root['PlayerInfo']['CurrWeight'].value
 
 	@property
 	def maxweight(self):
-		return self.value['PlayerInfo']['MaxWeight']
+		return self.root['PlayerInfo']['MaxWeight'].value
 
 	@property
 	def hour(self):
-		return self.value['PlayerInfo']['TimeHour']
+		return self.root['PlayerInfo']['TimeHour'].value
 
 	@property
 	def time(self):
 		"""Returns the in-game time in unix epoch time.
 		Let's hope they solved the 2038 problem!"""
-		playerinfo = self.value['PlayerInfo']
+		playerinfo = self.root['PlayerInfo']
 		return timegm((
-			2000 + playerinfo['DateYear'],
-			playerinfo['DateMonth'],
-			playerinfo['DateDay'],
+			2000 + playerinfo['DateYear'].value,
+			playerinfo['DateMonth'].value,
+			playerinfo['DateDay'].value,
 			0, 0, 0 # hour, min, sec
-		)) + playerinfo['TimeHour'] * 3600
+		)) + playerinfo['TimeHour'].value * 3600
 
 	@property
 	def perks(self):
 		"""Returns a dict {perk name: rank} of (non-hidden) perks the player has (ie. all ranks are at least 1)"""
 		return {
 			perk['Name']: perk['Rank']
-			for perk in self.value['Perks']
+			for perk in self.root['Perks'].value
 			if perk['Name'] and perk['Rank']
 		}
 
 	@property
 	def radio(self):
 		"""Currently active radio station. Returns string name, or None."""
-		active = [radio['text'] for radio in self.value['Radio'] if radio['active']]
+		active = [radio['text'] for radio in self.root['Radio'].value if radio['active']]
 		if not active:
 			return
 		active, = active
@@ -121,14 +121,14 @@ class Player(Data):
 	@property
 	def available_radios(self):
 		"""Returns list of available radio stations by name."""
-		return [radio['text'] for radio in self.value['Radio'] if radio['inRange']]
+		return [radio['text'] for radio in self.root['Radio'].value if radio['inRange']]
 
 	@property
 	def special(self):
 		"""Returns a tuple of player's S.P.E.C.I.A.L. stats, in order."""
-		return [stat['Value'] for stat in self.value['Special']]
+		return [stat['Value'] for stat in self.root['Special'].value]
 
 	@property
 	def base_special(self):
 		"""As special, but without temporary modifiers."""
-		return [stat['Value'] - stat['Modifier'] for stat in self.value['Special']]
+		return [stat['Value'] - stat['Modifier'] for stat in self.root['Special'].value]
