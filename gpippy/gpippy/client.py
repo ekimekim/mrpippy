@@ -65,11 +65,14 @@ class Client(Service):
 			callback(update)
 
 	def do_rpc(self, method, *args, **kwargs):
-		block = kwargs.pop('block', True)
+		block = kwargs.pop('block', False)
 		if kwargs:
 			raise ValueError("Unexpected kwargs: {}".format(kwargs))
-		result = AsyncResult()
-		request = method(lambda v: result.set(v), *args)
+		if block:
+			result = AsyncResult()
+			request = method(*args, callback=lambda v: result.set(v))
+		else:
+			request = method(*args)
 		self.send(MessageType.COMMAND, request)
 		self.log.info("Send RPC: {}{}".format(method, args))
 		if block:
