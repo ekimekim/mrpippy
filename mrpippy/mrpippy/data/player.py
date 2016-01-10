@@ -13,18 +13,31 @@ class Player(Data):
 	@property
 	def locked(self):
 		"""Indicates you shouldn't try to make changes right now"""
-		status = self.value['Status']
-		return any([
-			status['IsInAutoVanity'],
-			status['IsPlayerDead'],
-			status['IsMenuOpen'],
-			status['IsInVats'],
-			status['IsInVatsPlayback'],
-			status['IsPlayerPipboyLocked'],
-			status['IsPlayerMovementLocked'],
-			status['IsPipboyNotEquipped'],
-			status['IsLoading'],
-		])
+		return self.status is not None
+
+	@property
+	def status(self):
+		"""Returns a string describing the player's current state (dead, in vats, etc),
+		or None if player is in no special state."""
+		# list of (key, description) in priority order
+		flags = [
+			("IsDataUnavailable", "data unavailable"),
+			("IsPlayerDead", "dead"),
+			("IsLoading", "loading"),
+			("IsInAutoVanity", "in auto vanity"),
+			("IsMenuOpen", "in menu"),
+			("IsPipboyNotEquipped", "no pipboy"),
+			("IsPlayerPipboyLocked", "pipboy locked"),
+			("IsPlayerMovementLocked", "movement locked"),
+			("IsInVats", "in vats"),
+			("IsInVatsPlayback", "in vats playback"),
+			("IsPlayerInDialogue", "in dialogue"),
+			("IsInAnimation", "in animation"),
+		]
+		status = self.root['Status']
+		for key, description in flags:
+			if status[key].value:
+				return description
 
 	@property
 	def location(self):
