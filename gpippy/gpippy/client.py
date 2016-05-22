@@ -19,11 +19,14 @@ def _do_rpc(name):
 
 
 class Client(Service):
-	def __init__(self, host, port=27000, on_update=None, on_close=None, sock=None):
+	def __init__(self, host=None, port=27000, sock=None, on_update=None, on_close=None):
 		"""on_update is an optional callback that is called with a list of updated values on DATA_UPDATE.
-		You can either give (host, port) to connect to, or host=None to listen for an incoming connection,
-		or sock=a socket object explicitly."""
-		if sock is not None:
+		Of host, port, sock, the following combinations can be given:
+			port only: Listen on port and use the first peer that connects
+			host, port: Connect to host, port
+			sock only: Use given socket
+		"""
+		if sock:
 			self.conn = ClientConnectionFromSocket(sock)
 		elif host is None:
 			import socket
@@ -57,12 +60,14 @@ class Client(Service):
 		DISPATCH[message_type](payload)
 
 	def data_update(self, payload):
+		updates = []
 		for n, update in enumerate(self.pipdata.decode_and_update(payload)):
 			# since payload may be very large, give other greenlets a chance to run
 			if n % 100 == 0:
 				gevent.idle(0)
+			updates.append(update)
 		for callback in self.update_callbacks:
-			callback(update)
+			callback(updates)
 
 	def do_rpc(self, method, *args, **kwargs):
 		block = kwargs.pop('block', False)
