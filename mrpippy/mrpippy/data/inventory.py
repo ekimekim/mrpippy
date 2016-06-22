@@ -196,6 +196,32 @@ class Item(Data):
 		'whiskey',
 		'wine',
 	}
+	
+	# All chem-type aid item names.
+	# All lower-case as different sources often cite different capitalization.
+	CHEMS = {
+		'berry mentats',
+		'buffjet',
+		'buffout',
+		'bufftats',
+		'calmex',
+		'daddy-o',
+		'day tripper',
+		'fury',
+		'grape mentats',
+		'jet',
+		'jet fuel',
+		'med-x',
+		'mentats',
+		'orange mentats',
+		'overdrive',
+		'psycho',
+		'psycho jet',
+		'psychobuff',
+		'psychotats',
+		'ultra jet',
+		'x-cell',
+	}
 
 	def __repr__(self):
 		return "<{cls.__name__} {self.count}x {self.name!r}>".format(self=self, cls=type(self))
