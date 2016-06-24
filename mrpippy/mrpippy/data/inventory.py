@@ -196,10 +196,10 @@ class Item(Data):
 		'whiskey',
 		'wine',
 	}
-	
+
 	# All chem-type aid item names.
 	# All lower-case as different sources often cite different capitalization.
-	CHEMS = {
+	CHEM_NAMES = {
 		'berry mentats',
 		'buffjet',
 		'buffout',
