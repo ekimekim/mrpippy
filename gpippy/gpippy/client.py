@@ -19,9 +19,13 @@ def _do_rpc(name):
 
 
 class Client(Service):
-	def __init__(self, host, port=27000, on_update=None, on_close=None):
-		"""on_update is an optional callback that is called with a list of updated values on DATA_UPDATE"""
-		if host is None:
+	def __init__(self, host, port=27000, on_update=None, on_close=None, sock=None):
+		"""on_update is an optional callback that is called with a list of updated values on DATA_UPDATE.
+		You can either give (host, port) to connect to, or host=None to listen for an incoming connection,
+		or sock=a socket object explicitly."""
+		if sock is not None:
+			self.conn = ClientConnectionFromSocket(sock)
+		elif host is None:
 			import socket
 			l = socket.socket()
 			l.bind(('0.0.0.0', 27000))
