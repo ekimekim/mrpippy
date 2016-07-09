@@ -8,14 +8,17 @@ from mrpippy.connection import ClientConnectionFromSocket
 from common import Service
 
 
-def _do_rpc(name):
-	"""Generates a method that calls self.do_rpc with the named method on self.rpc,
-	eg. _do_rpc('foo')(self, *args) -> do_rpc(self, self.rpc.foo, *args)
-	"""
-	def generated(self, *args, **kwargs):
-		return self.do_rpc(getattr(self.rpc, name), *args, **kwargs)
-	generated.__name__ = name
-	return generated
+class ItemAppearsNotUsed(Exception):
+	"""Raised when you try to use an item, but it appears to not actually happen."""
+	def __init__(self, item, timeout, extra=None):
+		self.item = item
+		self.timeout = timeout
+		self.extra = extra
+
+	def __str__(self):
+		if self.extra:
+			return "Item {self.item} may have not been used: {self.extra}".format(self=self)
+		return "Item {self.item} did not appear to have been used after {self.timeout} seconds".format(self=self)
 
 
 class Client(Service):
@@ -83,4 +86,57 @@ class Client(Service):
 		if block:
 			return result.get()
 
-	use_item = _do_rpc('use_item')
+	def use_item(self, item, timeout=0):
+		"""Use an item. If timeout is non-zero, wait up to timeout seconds trying to spot
+		our item being "used" (ie. for an equippable, watch for it becoming equipped).
+		Note this won't work for all items. If we could potentially spot it being used, and we don't
+		within the timeout, raises a ItemAppearsNotUsed.
+		"""
+		handle_id = item.handle_id
+		inventory = item.inventory
+		self.do_rpc(handle_id, inventory.version)
+
+		if not timeout:
+			return
+
+		if item in inventory.apparel + inventory.weapons:
+			item_type = 'equip'
+			target_state = not item.equipped
+		elif item in inventory.aid:
+			item_type = 'consume'
+			target_quantity = item.count - 1
+		else:
+			return # can't see effects of use
+
+		done = AsyncResult()
+
+		# XXX if inventory version increases and we don't see the change, it must have failed?
+
+		def _use_item_check(updates):
+			found = [i for i in Inventory(self.pipdata).items if i.handle_id == handle_id]
+			if len(found) > 1:
+				done.set('Found multiple copies of same item?')
+				return
+			if found:
+				item, = found
+
+			quantity = item.count if found else 0
+			if item_type == 'consume' and quantity == target_quantity:
+				done.set(None)
+
+			if not found:
+				done.set(('Item no longer exists')
+
+			if item_type == 'equip' and target_state == item.equipped:
+				done.set(None)
+
+		try:
+			self.update_callbacks.add(_use_item_check)
+			error = done.get(timeout)
+		except gevent.Timeout:
+			raise ItemAppearsNotUsed(item, timeout)
+		finally:
+			self.update_callbacks.discard(_use_item_check)
+
+		if error:
+			raise ItemAppearsNotUsed(item, timeout, error)
